@@ -1,6 +1,6 @@
 <div align="center">
 
-# 🥷 greeting-ninja
+# 👋 greeting-ninja
 
 **Auto-greet WhatsApp users in their own language — based on their phone number.**
 
