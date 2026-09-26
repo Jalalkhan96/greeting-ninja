@@ -460,6 +460,6 @@ See [LICENSE](./LICENSE) for details.
 
 **⭐ If this helped you, star the repo!**
 
-Made with 🥷 by **TEAM ABIX**
+Made with 😜 by **TEAM ABIX**
 
 </div>
