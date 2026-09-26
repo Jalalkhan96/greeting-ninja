@@ -1,0 +1,63 @@
+{
+  "name": "greeting-ninja",
+  "version": "3.0.0",
+  "description": "Auto-greet WhatsApp users in their own language based on phone number. 61 languages, 80+ country codes, group welcome, first DM, zero dependencies.",
+  "main": "index.js",
+  "types": "index.d.ts",
+  "bin": {
+    "greeting-ninja": "./cli.js"
+  },
+  "files": [
+    "index.js",
+    "data.js",
+    "cli.js",
+    "index.d.ts",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "test": "node --test",
+    "prepublishOnly": "npm test"
+  },
+  "keywords": [
+    "greeting",
+    "greetings",
+    "whatsapp",
+    "whatsapp-bot",
+    "baileys",
+    "i18n",
+    "internationalization",
+    "phone",
+    "phone-number",
+    "country-code",
+    "language",
+    "languages",
+    "welcome",
+    "multilingual",
+    "locale",
+    "localization",
+    "urdu",
+    "hindi",
+    "arabic",
+    "multilingual-greeting"
+  ],
+  "author": "TEAM ABIX <https://github.com/Jalalkhan96>",
+  "contributors": [
+    "Jalal Khan (https://github.com/Jalalkhan96)"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Jalalkhan96/greeting-ninja.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Jalalkhan96/greeting-ninja/issues"
+  },
+  "homepage": "https://github.com/Jalalkhan96/greeting-ninja#readme",
+  "engines": {
+    "node": ">=16"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}
