@@ -13,7 +13,7 @@ const L = {
   nl: ['Dutch',        ['Hoi','Hallo'],              ['Goedendag'],                 'Welkom {name} 👋',               'Hoi {name}! 👋'],
   sv: ['Swedish',      ['Hej','Tjena'],              ['God dag'],                   'Välkommen {name} 👋',            'Hej {name}! 👋'],
   no: ['Norwegian',    ['Hei','Halla'],              ['God dag'],                   'Velkommen {name} 👋',            'Hei {name}! 👋'],
-  da: ['Danish',       ['Hej','Dav'],                ['God dag'],                   'Velkommen {name} 👋',            'Hej {name}! 👋'],
+  da: ['Danish',       ['Hej','Dav'],                ['God dag'],                   'Velkommen {name} 👋',            'Hei {name}! 👋'],
   fi: ['Finnish',      ['Moi','Hei'],                ['Hyvää päivää'],              'Tervetuloa {name} 👋',           'Moi {name}! 👋'],
   is: ['Icelandic',    ['Halló','Hæ'],               ['Góðan dag'],                 'Velkomin {name} 👋',             'Halló {name}! 👋'],
   pl: ['Polish',       ['Cześć','Hej'],              ['Dzień dobry'],               'Witaj {name} 👋',                'Cześć {name}! 👋'],
@@ -35,8 +35,8 @@ const L = {
   pa: ['Punjabi',      ['ਸਤਿ ਸ੍ਰੀ ਅਕਾਲ','ਹੈਲੋ'],     ['ਨਮਸਤੇ'],                     'ਜੀ ਆਇਆਂ ਨੂੰ {name} 👋',          'ਸਤਿ ਸ੍ਰੀ ਅਕਾਲ {name}!'],
   ta: ['Tamil',        ['வணக்கம்','ஹலோ'],           ['வணக்கம்'],                   'வரவேற்கிறோம் {name} 👋',         'வணக்கம் {name}! 👋'],
   te: ['Telugu',       ['నమస్కారం','హలో'],           ['నమస్కారం'],                  'స్వాగతం {name} 👋',              'నమస్కారం {name}! 👋'],
-  ml: ['Malayalam',    ['നമസ്കാരം','ഹലോ'],          ['നമസ്കാരം'],                  'സ്വാഗതം {name} 👋',              'നമസ്കാരം {name}! 👋'],
-  kn: ['Kannada',      ['ನಮಸ್ಕಾರ','ಹಲೋ'],           ['ನಮಸ್ಕಾರ'],                   'ಸ್ವಾಗತ {name} 👋',               'ನಮಸ್ಕಾರ {name}! 👋'],
+  ml: ['Malayalam',    ['നമസ്കാരം','ഹലോ'],          ['നമസ്കാരം'],                  'സ്വാഗതം {name} 👋',              'സ്വാഗതം {name}! 👋'],
+  kn: ['Kannada',      ['ನಮಸ್ಕಾರ','ಹಲೋ'],           ['ನಮಸ್ಕಾರ'],                   'ಸ್ವಾಗತ {name} 👋',               'ಸ್ವಾಗತ {name}! 👋'],
   mr: ['Marathi',      ['नमस्कार','हॅलो'],            ['नमस्कार'],                   'स्वागत आहे {name} 👋',           'नमस्कार {name}! 👋'],
   gu: ['Gujarati',     ['નમસ્તે','હેલો'],            ['નમસ્કાર'],                   'સ્વાગત છે {name} 👋',             'નમસ્તે {name}! 👋'],
   ne: ['Nepali',       ['नमस्ते','हेलो'],            ['नमस्कार'],                   'स्वागत छ {name} 👋',             'नमस्ते {name}! 👋'],
@@ -83,7 +83,8 @@ const C = {
   '86':'zh','886':'zh','852':'zh','81':'ja','82':'ko',
   '84':'vi','66':'th','62':'id','60':'ms','63':'tl',
   '95':'my','855':'km','856':'lo','976':'mn','998':'uz','994':'az','995':'ka','374':'hy',
-  '27':'af','234':'ig','254':'sw','251':'am','255':'sw','256':'sw','263':'en','260':'en'
+  '27':'af','234':'ig','254':'sw','251':'am','255':'sw','256':'sw','263':'en','260':'en',
+  '53':'es','502':'es','503':'es','504':'es','505':'es','506':'es','507':'es','509':'fr','373':'ro','996':'ru'
 };
 
 module.exports = { L, C };
