@@ -85,6 +85,15 @@ function greet(name, options = {}) {
   }
 }
 
+// greetFor(name, phone): greet by phone number without building an
+// options object — language is auto-detected via phoneToLang, and an
+// optional third argument passes through any greet() option (lang,
+// style, seed, ...). An explicit lang option still beats the phone.
+function greetFor(name, phone, options = {}) {
+  if (typeof options === 'string') options = { lang: options };
+  return greet(name, { ...options, phone: phone ?? options.phone });
+}
+
 function welcome(name, options = {}) {
   if (typeof options === 'string') options = { lang: options };
   name = normName(name);
@@ -120,6 +129,7 @@ function langName(code) { return state.langs[code]?.[0] || code; }
 
 module.exports = {
   greet,
+  greetFor,
   welcome,
   first,
   phoneToLang,

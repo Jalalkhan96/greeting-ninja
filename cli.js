@@ -14,15 +14,17 @@ for (let i = 0; i < argv.length; i++) {
   } else args.push(a);
 }
 
-const showHelp = flags.help || (!args.length && !flags['list-langs'] && !flags['list-countries']);
+const showHelp = flags.help || (!args.length && !flags.name && !flags['list-langs'] && !flags['list-countries']);
 
 if (showHelp) {
   console.log(`greet-ninja — greet anyone in their own language 🥷
 
 Usage:
   greet-ninja <name> [options]
+  greet-ninja --name <name> [options]
 
 Options:
+  --name <name>        Name to greet (alternative to the positional <name>)
   --phone <number>     Auto-detect language from WhatsApp number
   --lang <code>        Force a language (en, ur, hi, ar, ja…)
   --style <name>       formal | casual | emoji | upper | lower | minimal
@@ -35,6 +37,7 @@ Options:
 
 Examples:
   greet-ninja Ali
+  greet-ninja --name Ali --phone +923001234567
   greet-ninja Ali --phone +923001234567
   greet-ninja Sara --mode welcome --phone +923001234567 --group "Family"
   greet-ninja Yuki --mode first --phone +819012345678
@@ -58,7 +61,7 @@ if (flags['list-countries']) {
   process.exit(0);
 }
 
-const name = args[0];
+const name = flags.name || args[0];
 const opts = {
   lang: flags.lang,
   phone: flags.phone,
