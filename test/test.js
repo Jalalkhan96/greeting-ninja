@@ -126,3 +126,25 @@ test('languages() returns 60+ entries', () => {
 test('countries() returns 70+ entries', () => {
   assert.ok(Object.keys(g.countries()).length >= 70);
 });
+test('greetFor() greets by phone number (Pakistan → Urdu)', () => {
+  assert.strictEqual(typeof g.greetFor, 'function');
+  const out = g.greetFor('Ali', '+923001234567');
+  assert.match(out, /Ali/);
+  assert.doesNotMatch(out, /Hello/);
+});
+
+test('greetFor() lang option beats the phone', () => {
+  const out = g.greetFor('Ali', '+923001234567', { lang: 'fr' });
+  assert.match(out, /Ali/);
+  assert.match(out, /Salut|Coucou/);
+});
+
+test('greetFor() passes options through (casual style)', () => {
+  const out = g.greetFor('Ali', '+923001234567', { style: 'casual' });
+  assert.match(out, /Ali!/);
+});
+
+test('greetFor() falls back for an unknown phone', () => {
+  const out = g.greetFor('Ali', '+9991234');
+  assert.match(out, /Ali/);
+});
