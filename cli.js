@@ -73,4 +73,9 @@ for (const k of Object.keys(opts)) if (opts[k] === undefined) delete opts[k];
 
 const mode = flags.mode || 'greet';
 const fn = mode === 'welcome' ? g.welcome : mode === 'first' ? g.first : g.greet;
-console.log(fn(name, opts));
+try {
+  console.log(fn(name, opts));
+} catch (err) {
+  console.error('Error: ' + err.message);
+  process.exit(1);
+}

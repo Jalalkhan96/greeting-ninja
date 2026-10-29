@@ -48,8 +48,25 @@ function phoneToLang(phone) {
   return null;
 }
 
+// ─── phone validation ───
+// validatePhone(phone): reject an explicitly supplied phone number that
+// has no digits or is too short to be real. Returns the digit string.
+// undefined/null (no phone given) returns null — callers fall back to
+// the default language. Unknown-but-well-formed prefixes (e.g. +999)
+// are NOT rejected here; phoneToLang returns null for those and the
+// caller falls back, as before.
+function validatePhone(phone) {
+  if (phone === undefined || phone === null) return null;
+  let digits = String(phone).replace(/\D/g, '');
+  if (digits.startsWith('00')) digits = digits.slice(2);
+  if (!digits) throw new Error('Invalid phone number: "' + phone + '" has no digits — pass a full international number like +923001234567');
+  if (digits.length < 7) throw new Error('Invalid phone number: "' + phone + '" is too short (' + digits.length + ' digits) — pass a full international number like +923001234567');
+  return digits;
+}
+
 // ─── resolve lang from options ───
 function resolveLang(opts = {}) {
+  if (opts.phone !== undefined && opts.phone !== null) validatePhone(opts.phone);
   return (
     opts.lang ||
     (opts.phone && phoneToLang(opts.phone)) ||
@@ -133,6 +150,7 @@ module.exports = {
   welcome,
   first,
   phoneToLang,
+  validatePhone,
   config,
   languages,
   countries,
