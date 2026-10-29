@@ -148,3 +148,40 @@ test('greetFor() falls back for an unknown phone', () => {
   const out = g.greetFor('Ali', '+9991234');
   assert.match(out, /Ali/);
 });
+
+test('validatePhone() accepts well-formed numbers and returns digits', () => {
+  assert.strictEqual(g.validatePhone('+923001234567'), '923001234567');
+  assert.strictEqual(g.validatePhone('00923001234567'), '923001234567');
+  assert.strictEqual(g.validatePhone(null), null);
+  assert.strictEqual(g.validatePhone(undefined), null);
+});
+
+test('validatePhone() rejects empty / digit-less / too-short phones', () => {
+  assert.throws(() => g.validatePhone(''), /Invalid phone number.*no digits/);
+  assert.throws(() => g.validatePhone('abc'), /Invalid phone number.*no digits/);
+  assert.throws(() => g.validatePhone('123'), /Invalid phone number.*too short/);
+  assert.throws(() => g.validatePhone('+92'), /Invalid phone number.*too short/);
+});
+
+test('greet() rejects an invalid phone with a clear error', () => {
+  assert.throws(() => g.greet('Ali', { phone: '' }), /Invalid phone number/);
+  assert.throws(() => g.greet('Ali', { phone: 'abc' }), /Invalid phone number/);
+  assert.throws(() => g.greet('Ali', { phone: '12345' }), /Invalid phone number/);
+});
+
+test('greetFor() rejects an invalid phone', () => {
+  assert.throws(() => g.greetFor('Ali', ''), /Invalid phone number/);
+  assert.throws(() => g.greetFor('Ali', 'not-a-number'), /Invalid phone number/);
+});
+
+test('CLI rejects an invalid phone (exit 1 + clear error)', () => {
+  const { spawnSync } = require('node:child_process');
+  const path = require('node:path');
+  const cli = path.join(__dirname, '..', 'cli.js');
+  const bad = spawnSync('node', [cli, '--name', 'Ali', '--phone', 'abc'], { encoding: 'utf8' });
+  assert.notStrictEqual(bad.status, 0);
+  assert.match(bad.stderr, /Invalid phone number/);
+  const good = spawnSync('node', [cli, '--name', 'Ali', '--phone', '+923001234567', '--seed', '1'], { encoding: 'utf8' });
+  assert.strictEqual(good.status, 0);
+  assert.match(good.stdout, /Ali/);
+});
