@@ -185,3 +185,20 @@ test('CLI rejects an invalid phone (exit 1 + clear error)', () => {
   assert.strictEqual(good.status, 0);
   assert.match(good.stdout, /Ali/);
 });
+
+test('new country mappings (Belize, Guyana, Suriname, Timor-Leste, Brunei, Ivory Coast, Ghana, Angola, Mozambique, Malta)', () => {
+  const c = g.countries();
+  assert.strictEqual(c['501'], 'en'); // Belize
+  assert.strictEqual(c['592'], 'en'); // Guyana
+  assert.strictEqual(c['597'], 'nl'); // Suriname (Dutch)
+  assert.strictEqual(c['670'], 'pt'); // Timor-Leste (Portuguese)
+  assert.strictEqual(c['673'], 'ms'); // Brunei (Malay)
+  assert.strictEqual(c['225'], 'fr'); // Ivory Coast (French)
+  assert.strictEqual(c['233'], 'en'); // Ghana
+  assert.strictEqual(c['244'], 'pt'); // Angola (Portuguese)
+  assert.strictEqual(c['258'], 'pt'); // Mozambique (Portuguese)
+  assert.strictEqual(c['356'], 'en'); // Malta
+  // Behavioural check: greetFor resolves the new prefixes, not the fallback guesswork.
+  assert.match(g.greetFor('Ana', '+5971234567', { seed: 1 }), /Ana/);
+  assert.match(g.greetFor('Ana', '+2251234567', { seed: 1 }), /Salut|Coucou/);
+});
