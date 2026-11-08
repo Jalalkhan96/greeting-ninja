@@ -14,7 +14,7 @@ for (let i = 0; i < argv.length; i++) {
   } else args.push(a);
 }
 
-const showHelp = flags.help || (!args.length && !flags.name && !flags['list-langs'] && !flags['list-countries']);
+const showHelp = flags.help || (!args.length && !flags.name && !flags.file && !flags['list-langs'] && !flags['list-countries']);
 
 if (showHelp) {
   console.log(`greet-ninja — greet anyone in their own language 🥷
@@ -25,6 +25,7 @@ Usage:
 
 Options:
   --name <name>        Name to greet (alternative to the positional <name>)
+  --file <path>        Greet every name in a text file (one per line)
   --phone <number>     Auto-detect language from WhatsApp number
   --lang <code>        Force a language (en, ur, hi, ar, ja…)
   --style <name>       formal | casual | emoji | upper | lower | minimal
@@ -42,6 +43,8 @@ Examples:
   greet-ninja Sara --mode welcome --phone +923001234567 --group "Family"
   greet-ninja Yuki --mode first --phone +819012345678
   greet-ninja Ahmed --phone +201234567890 --style formal
+  greet-ninja --file names.txt --lang ur
+  greet-ninja --file names.txt --mode welcome --group "Family"
 `);
   process.exit(0);
 }
@@ -73,6 +76,31 @@ for (const k of Object.keys(opts)) if (opts[k] === undefined) delete opts[k];
 
 const mode = flags.mode || 'greet';
 const fn = mode === 'welcome' ? g.welcome : mode === 'first' ? g.first : g.greet;
+
+// Batch mode: greet every name in a text file, one greeting per line.
+if (flags.file) {
+  const fs = require('node:fs');
+  let text;
+  try {
+    text = fs.readFileSync(flags.file, 'utf8');
+  } catch (err) {
+    console.error('Error: cannot read file "' + flags.file + '": ' + err.message);
+    process.exit(1);
+  }
+  try {
+    const out = g.greetAll(text.split(/\r?\n/), { ...opts, mode });
+    if (!out.length) {
+      console.error('Error: no names found in "' + flags.file + '"');
+      process.exit(1);
+    }
+    console.log(out.join('\n'));
+  } catch (err) {
+    console.error('Error: ' + err.message);
+    process.exit(1);
+  }
+  process.exit(0);
+}
+
 try {
   console.log(fn(name, opts));
 } catch (err) {
