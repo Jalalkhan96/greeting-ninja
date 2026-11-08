@@ -111,6 +111,23 @@ function greetFor(name, phone, options = {}) {
   return greet(name, { ...options, phone: phone ?? options.phone });
 }
 
+// greetAll(names, options): greet a list of names (e.g. read from a file,
+// one name per line). Blank lines and surrounding whitespace are skipped;
+// a single string counts as one name. options.mode picks the greeting
+// ('greet' | 'welcome' | 'first'); every other option passes through to
+// greet()/welcome()/first() unchanged. Returns one greeting per name,
+// in the same order.
+function greetAll(names, options = {}) {
+  if (typeof names === 'string') names = [names];
+  if (!Array.isArray(names)) throw new Error('Names must be an array or a string');
+  const mode = options.mode || 'greet';
+  const fn = mode === 'welcome' ? welcome : mode === 'first' ? first : greet;
+  return names
+    .map(n => (typeof n === 'string' ? n.trim() : n))
+    .filter(n => n)
+    .map(n => fn(n, options));
+}
+
 function welcome(name, options = {}) {
   if (typeof options === 'string') options = { lang: options };
   name = normName(name);
@@ -147,6 +164,7 @@ function langName(code) { return state.langs[code]?.[0] || code; }
 module.exports = {
   greet,
   greetFor,
+  greetAll,
   welcome,
   first,
   phoneToLang,
