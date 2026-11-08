@@ -202,3 +202,54 @@ test('new country mappings (Belize, Guyana, Suriname, Timor-Leste, Brunei, Ivory
   assert.match(g.greetFor('Ana', '+5971234567', { seed: 1 }), /Ana/);
   assert.match(g.greetFor('Ana', '+2251234567', { seed: 1 }), /Salut|Coucou/);
 });
+
+test('greetAll() greets every name, skips blank lines', () => {
+  const out = g.greetAll(['Ali', '  ', 'Sara', ''], { lang: 'en', seed: 1 });
+  assert.strictEqual(out.length, 2);
+  assert.match(out[0], /Ali/);
+  assert.match(out[1], /Sara/);
+});
+
+test('greetAll() accepts a single string and passes options through', () => {
+  const out = g.greetAll('Ali', { lang: 'ur', seed: 1 });
+  assert.strictEqual(out.length, 1);
+  assert.match(out[0], /Ali/);
+  assert.doesNotMatch(out[0], /Hello/);
+});
+
+test('greetAll() rejects a non-array, non-string input', () => {
+  assert.throws(() => g.greetAll(42), /Names must be/);
+});
+
+test('greetAll() honours mode: welcome', () => {
+  const out = g.greetAll(['Ali'], { lang: 'en', mode: 'welcome', group: 'Family', seed: 1 });
+  assert.strictEqual(out.length, 1);
+  assert.match(out[0], /Family/);
+});
+
+test('CLI --file greets every name in the file', () => {
+  const { spawnSync } = require('node:child_process');
+  const fs = require('node:fs');
+  const os = require('node:os');
+  const path = require('node:path');
+  const cli = path.join(__dirname, '..', 'cli.js');
+  const tmp = path.join(os.tmpdir(), 'gn-names-' + Date.now() + '.txt');
+  fs.writeFileSync(tmp, 'Ali\n\nSara\n');
+  try {
+    const run = spawnSync('node', [cli, '--file', tmp, '--lang', 'en', '--seed', '1'], { encoding: 'utf8' });
+    assert.strictEqual(run.status, 0, run.stderr);
+    assert.match(run.stdout, /Ali/);
+    assert.match(run.stdout, /Sara/);
+    const missing = spawnSync('node', [cli, '--file', tmp + '.nope'], { encoding: 'utf8' });
+    assert.notStrictEqual(missing.status, 0);
+    assert.match(missing.stderr, /cannot read file/);
+    const empty = path.join(os.tmpdir(), 'gn-empty-' + Date.now() + '.txt');
+    fs.writeFileSync(empty, '\n\n');
+    const noNames = spawnSync('node', [cli, '--file', empty], { encoding: 'utf8' });
+    assert.notStrictEqual(noNames.status, 0);
+    assert.match(noNames.stderr, /no names found/);
+    fs.unlinkSync(empty);
+  } finally {
+    fs.unlinkSync(tmp);
+  }
+});
