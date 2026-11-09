@@ -148,6 +148,22 @@ function first(name, options = {}) {
   return fill(langData(lang)[4], { name });
 }
 
+// greetInfo(name, options): machine-readable form of a greeting — the
+// greeting text plus the resolved language and mode, for scripts and
+// pipelines (see the CLI --json flag). options.mode picks the greeting
+// ('greet' | 'welcome' | 'first'); every other option passes through to
+// greet()/welcome()/first() unchanged.
+function greetInfo(name, options = {}) {
+  const mode = options.mode || 'greet';
+  const fn = mode === 'welcome' ? welcome : mode === 'first' ? first : greet;
+  return {
+    name: normName(name),
+    greeting: fn(name, options),
+    lang: resolveLang(options),
+    mode
+  };
+}
+
 // ─── customization ───
 
 function config(opts = {}) {
@@ -165,6 +181,7 @@ module.exports = {
   greet,
   greetFor,
   greetAll,
+  greetInfo,
   welcome,
   first,
   phoneToLang,
