@@ -9,12 +9,12 @@ for (let i = 0; i < argv.length; i++) {
   const a = argv[i];
   if (a.startsWith('--')) {
     const k = a.slice(2);
-    if (['help', 'list-langs', 'list-countries'].includes(k)) flags[k] = true;
+    if (['help', 'list-langs', 'list-countries', 'json'].includes(k)) flags[k] = true;
     else flags[k] = argv[++i];
   } else args.push(a);
 }
 
-const showHelp = flags.help || (!args.length && !flags.name && !flags.file && !flags['list-langs'] && !flags['list-countries']);
+const showHelp = flags.help || (!args.length && !flags.name && !flags.file && !flags.json && !flags['list-langs'] && !flags['list-countries']);
 
 if (showHelp) {
   console.log(`greet-ninja — greet anyone in their own language 🥷
@@ -32,6 +32,7 @@ Options:
   --mode <type>        greet (default) | welcome | first
   --group <name>       Group name for welcome mode
   --seed <number>      Deterministic output
+  --json               Output as JSON (single object, or an array with --file)
   --list-langs         Show all languages
   --list-countries     Show country → language mappings
   --help               Show this help
@@ -88,12 +89,25 @@ if (flags.file) {
     process.exit(1);
   }
   try {
-    const out = g.greetAll(text.split(/\r?\n/), { ...opts, mode });
-    if (!out.length) {
-      console.error('Error: no names found in "' + flags.file + '"');
-      process.exit(1);
+    const names = text.split(/\r?\n/);
+    if (flags.json) {
+      const out = names
+        .map(n => (typeof n === 'string' ? n.trim() : n))
+        .filter(n => n)
+        .map(n => g.greetInfo(n, { ...opts, mode }));
+      if (!out.length) {
+        console.error('Error: no names found in "' + flags.file + '"');
+        process.exit(1);
+      }
+      console.log(JSON.stringify(out));
+    } else {
+      const out = g.greetAll(names, { ...opts, mode });
+      if (!out.length) {
+        console.error('Error: no names found in "' + flags.file + '"');
+        process.exit(1);
+      }
+      console.log(out.join('\n'));
     }
-    console.log(out.join('\n'));
   } catch (err) {
     console.error('Error: ' + err.message);
     process.exit(1);
@@ -102,7 +116,8 @@ if (flags.file) {
 }
 
 try {
-  console.log(fn(name, opts));
+  if (flags.json) console.log(JSON.stringify(g.greetInfo(name, { ...opts, mode })));
+  else console.log(fn(name, opts));
 } catch (err) {
   console.error('Error: ' + err.message);
   process.exit(1);
