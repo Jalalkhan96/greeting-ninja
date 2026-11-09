@@ -9,7 +9,7 @@
 [![license](https://img.shields.io/npm/l/greeting-ninja.svg)](./LICENSE)
 [![node](https://img.shields.io/node/v/greeting-ninja.svg)](https://nodejs.org)
 
-**61 languages · 80+ country codes · Zero dependencies · ~7 KB**
+**61 languages · 80+ country codes · Zero dependencies · Time-of-day + occasion greetings (v4)**
 
 Made with ❤️ by **[TEAM ABIX](https://github.com/Jalalkhan96)**
 
@@ -83,6 +83,33 @@ g.greet('Ali', { seed: 42 });                      // same output every call
 // ─── Multiple names ───
 g.greet(['Ali', 'Sara', 'Ravi']);                  // "Hello, Ali, Sara & Ravi"
 ```
+
+---
+
+## 🆕 What's new in v4
+
+```javascript
+const g = require('greeting-ninja');
+
+// ─── Time-of-day greeting (auto from phone) ───
+g.timeGreet('Ali', { phone: '+923001234567', hour: 9 });   // "صبح بخیر, Ali"
+g.timeGreet('Ali', { hour: 19 });                          // "Good evening, Ali"
+
+// ─── Occasions ───
+g.birthday('Sara', { phone: '+14155551234' });             // "Happy Birthday, Sara! 🎂🎉"
+g.farewell('Ali',  { phone: '+923001234567' });            // "اللہ حافظ Ali! خیال رکھنا 👋"
+g.thank('Yuki',    { phone: '+819012345678' });            // "ありがとう、Yuki さん！🙏"
+g.congrats('Marco', { phone: '+393331234567' });           // "Congratulazioni, Marco! 🎉"
+
+// ─── Baileys-ready payload ───
+const p = g.forWhatsApp('Ali', { phone: '+923001234567', mode: 'welcome', group: 'Team ABIX' });
+await sock.sendMessage(jid, p.payload);                    // { text: "خوش آمدید Ali 👋\n🎉 Welcome to *Team ABIX*!" }
+```
+
+Time/occasion messages are curated for 22 major languages and fall back to
+English elsewhere; the core greetings still cover all 61 languages.
+CLI: `greet-ninja Ali --mode birthday --phone +923001234567`,
+`greet-ninja Ali --mode time --hour 9`.
 
 ---
 

@@ -29,7 +29,8 @@ Options:
   --phone <number>     Auto-detect language from WhatsApp number
   --lang <code>        Force a language (en, ur, hi, ar, ja…)
   --style <name>       formal | casual | emoji | upper | lower | minimal
-  --mode <type>        greet (default) | welcome | first
+  --mode <type>        greet (default) | welcome | first | time | farewell | thank | birthday | congrats
+  --hour <0-23>        Hour for --mode time (default: current hour)
   --group <name>       Group name for welcome mode
   --seed <number>      Deterministic output
   --json               Output as JSON (single object, or an array with --file)
@@ -76,7 +77,12 @@ const opts = {
 for (const k of Object.keys(opts)) if (opts[k] === undefined) delete opts[k];
 
 const mode = flags.mode || 'greet';
-const fn = mode === 'welcome' ? g.welcome : mode === 'first' ? g.first : g.greet;
+const MODE_FNS = {
+  greet: g.greet, welcome: g.welcome, first: g.first, time: g.timeGreet,
+  farewell: g.farewell, thank: g.thank, birthday: g.birthday, congrats: g.congrats
+};
+const fn = MODE_FNS[mode] || g.greet;
+if (flags.hour !== undefined) opts.hour = Number(flags.hour);
 
 // Batch mode: greet every name in a text file, one greeting per line.
 if (flags.file) {

@@ -1,5 +1,6 @@
 'use strict';
 const { L, C } = require('./data');
+const { X } = require('./extras');
 
 const state = {
   langs: { ...L },
@@ -121,7 +122,7 @@ function greetAll(names, options = {}) {
   if (typeof names === 'string') names = [names];
   if (!Array.isArray(names)) throw new Error('Names must be an array or a string');
   const mode = options.mode || 'greet';
-  const fn = mode === 'welcome' ? welcome : mode === 'first' ? first : greet;
+  const fn = (typeof MODES !== 'undefined' && MODES[mode]) || (mode === 'welcome' ? welcome : mode === 'first' ? first : greet);
   return names
     .map(n => (typeof n === 'string' ? n.trim() : n))
     .filter(n => n)
@@ -148,20 +149,80 @@ function first(name, options = {}) {
   return fill(langData(lang)[4], { name });
 }
 
+// ─── v4: time-of-day + occasion messages ───
+// Data lives in extras.js for the most-used languages; other languages
+// fall back to the English extras (core greetings still cover 61 langs).
+
+function extrasFor(opts = {}) {
+  const lang = resolveLang(opts);
+  return { lang, x: X[lang] || X.en };
+}
+
+function dayPart(hour) {
+  const h = ((Number(hour) % 24) + 24) % 24;
+  if (h >= 5 && h < 12) return 0;   // morning
+  if (h >= 12 && h < 17) return 1;  // afternoon
+  if (h >= 17 && h < 21) return 2;  // evening
+  return 3;                          // night
+}
+
+// timeGreet(name, options): "Good morning, Ali" in the user's language.
+// options.hour (0-23) or options.date (Date) pick the part of day;
+// default is the current local hour. Combine with phone like greet().
+function timeGreet(name, options = {}) {
+  if (typeof options === 'string') options = { lang: options };
+  name = normName(name);
+  const { x } = extrasFor(options);
+  const hour = options.hour !== undefined
+    ? options.hour
+    : (options.date instanceof Date ? options.date.getHours() : new Date().getHours());
+  return `${x[dayPart(hour)]}, ${name}`;
+}
+
+function occasion(name, options, idx) {
+  if (typeof options === 'string') options = { lang: options };
+  name = normName(name);
+  const { x } = extrasFor(options);
+  return fill(x[idx], { name });
+}
+
+// farewell(name, options) / thank(name, options) /
+// birthday(name, options) / congrats(name, options)
+function farewell(name, options = {}) { return occasion(name, options, 4); }
+function thank(name, options = {}) { return occasion(name, options, 5); }
+function birthday(name, options = {}) { return occasion(name, options, 6); }
+function congrats(name, options = {}) { return occasion(name, options, 7); }
+
+const MODES = { greet, welcome, first, time: timeGreet, farewell, thank, birthday, congrats };
+
 // greetInfo(name, options): machine-readable form of a greeting — the
 // greeting text plus the resolved language and mode, for scripts and
 // pipelines (see the CLI --json flag). options.mode picks the greeting
-// ('greet' | 'welcome' | 'first'); every other option passes through to
-// greet()/welcome()/first() unchanged.
+// ('greet' | 'welcome' | 'first' | 'time' | 'farewell' | 'thank' |
+// 'birthday' | 'congrats'); every other option passes through unchanged.
 function greetInfo(name, options = {}) {
   const mode = options.mode || 'greet';
-  const fn = mode === 'welcome' ? welcome : mode === 'first' ? first : greet;
+  const fn = MODES[mode] || greet;
   return {
     name: normName(name),
     greeting: fn(name, options),
     lang: resolveLang(options),
     mode
   };
+}
+
+// ─── v4: WhatsApp / Baileys helpers ───
+// forWhatsApp(name, options): a sendMessage-ready payload object.
+//   const p = g.forWhatsApp('Ali', { phone: '+92...', mode: 'welcome', group: 'Team' });
+//   await sock.sendMessage(jid, p.payload);
+// options.mentions (array of JIDs) is passed through when given.
+function forWhatsApp(name, options = {}) {
+  const info = greetInfo(name, options);
+  const payload = { text: info.greeting };
+  if (Array.isArray(options.mentions) && options.mentions.length) {
+    payload.mentions = options.mentions;
+  }
+  return { ...info, payload };
 }
 
 // ─── customization ───
@@ -184,6 +245,12 @@ module.exports = {
   greetInfo,
   welcome,
   first,
+  timeGreet,
+  farewell,
+  thank,
+  birthday,
+  congrats,
+  forWhatsApp,
   phoneToLang,
   validatePhone,
   config,

@@ -1,15 +1,16 @@
 {
   "name": "greeting-ninja",
-  "version": "3.0.0",
-  "description": "Auto-greet WhatsApp users in their own language based on phone number. 61 languages, 80+ country codes, group welcome, first DM, zero dependencies.",
+  "version": "4.0.0",
+  "description": "Auto-greet WhatsApp users in their own language based on phone number. 61 languages, 80+ country codes, group welcome, first DM, time-of-day greetings, birthday/farewell/thanks messages, Baileys-ready payloads, zero dependencies.",
   "main": "index.js",
   "types": "index.d.ts",
   "bin": {
-    "greeting-ninja": "./cli.js"
+    "greeting-ninja": "cli.js"
   },
   "files": [
     "index.js",
     "data.js",
+    "extras.js",
     "cli.js",
     "index.d.ts",
     "README.md",
@@ -39,7 +40,14 @@
     "urdu",
     "hindi",
     "arabic",
-    "multilingual-greeting"
+    "multilingual-greeting",
+    "good-morning",
+    "birthday",
+    "farewell",
+    "welcome-message",
+    "chatbot",
+    "auto-greeting",
+    "time-greeting"
   ],
   "author": "TEAM ABIX <https://github.com/Jalalkhan96>",
   "contributors": [
