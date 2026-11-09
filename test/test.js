@@ -227,6 +227,60 @@ test('greetAll() honours mode: welcome', () => {
   assert.match(out[0], /Family/);
 });
 
+test('greetInfo() returns name, greeting, lang and mode', () => {
+  const info = g.greetInfo('Ali', { lang: 'en', seed: 1 });
+  assert.strictEqual(info.name, 'Ali');
+  assert.strictEqual(info.lang, 'en');
+  assert.strictEqual(info.mode, 'greet');
+  assert.match(info.greeting, /Ali/);
+});
+
+test('greetInfo() resolves lang from phone and honours mode', () => {
+  const info = g.greetInfo('Ali', { phone: '+923001234567', mode: 'welcome', group: 'Family', seed: 1 });
+  assert.strictEqual(info.lang, 'ur');
+  assert.strictEqual(info.mode, 'welcome');
+  assert.match(info.greeting, /Family/);
+});
+
+test('greetInfo() rejects an invalid phone', () => {
+  assert.throws(() => g.greetInfo('Ali', { phone: 'abc' }), /Invalid phone number/);
+});
+
+test('CLI --json prints a parseable object for one name', () => {
+  const { spawnSync } = require('node:child_process');
+  const path = require('node:path');
+  const cli = path.join(__dirname, '..', 'cli.js');
+  const run = spawnSync('node', [cli, '--name', 'Sara', '--phone', '+14155551234', '--seed', '1', '--json'], { encoding: 'utf8' });
+  assert.strictEqual(run.status, 0, run.stderr);
+  const obj = JSON.parse(run.stdout);
+  assert.strictEqual(obj.name, 'Sara');
+  assert.strictEqual(obj.lang, 'en');
+  assert.strictEqual(obj.mode, 'greet');
+  assert.match(obj.greeting, /Sara/);
+});
+
+test('CLI --file --json prints a JSON array, skipping blank lines', () => {
+  const { spawnSync } = require('node:child_process');
+  const fs = require('node:fs');
+  const os = require('node:os');
+  const path = require('node:path');
+  const cli = path.join(__dirname, '..', 'cli.js');
+  const tmp = path.join(os.tmpdir(), 'gn-json-' + Date.now() + '.txt');
+  fs.writeFileSync(tmp, 'Ali\n\nSara\n');
+  try {
+    const run = spawnSync('node', [cli, '--file', tmp, '--lang', 'en', '--seed', '1', '--json'], { encoding: 'utf8' });
+    assert.strictEqual(run.status, 0, run.stderr);
+    const arr = JSON.parse(run.stdout);
+    assert.strictEqual(arr.length, 2);
+    assert.strictEqual(arr[0].name, 'Ali');
+    assert.strictEqual(arr[1].name, 'Sara');
+    assert.strictEqual(arr[0].lang, 'en');
+  } finally {
+    fs.unlinkSync(tmp);
+  }
+});
+
+
 test('CLI --file greets every name in the file', () => {
   const { spawnSync } = require('node:child_process');
   const fs = require('node:fs');
