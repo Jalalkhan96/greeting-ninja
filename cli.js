@@ -9,12 +9,12 @@ for (let i = 0; i < argv.length; i++) {
   const a = argv[i];
   if (a.startsWith('--')) {
     const k = a.slice(2);
-    if (['help', 'list-langs', 'list-countries', 'json'].includes(k)) flags[k] = true;
+    if (['help', 'list-langs', 'list-countries', 'json', 'random'].includes(k)) flags[k] = true;
     else flags[k] = argv[++i];
   } else args.push(a);
 }
 
-const showHelp = flags.help || (!args.length && !flags.name && !flags.file && !flags.json && !flags['list-langs'] && !flags['list-countries']);
+const showHelp = flags.help || (!args.length && !flags.name && !flags.file && !flags.json && !flags.random && !flags['list-langs'] && !flags['list-countries']);
 
 if (showHelp) {
   console.log(`greet-ninja — greet anyone in their own language 🥷
@@ -33,6 +33,7 @@ Options:
   --hour <0-23>        Hour for --mode time (default: current hour)
   --group <name>       Group name for welcome mode
   --seed <number>      Deterministic output
+  --random             Greet in a random supported language (seedable with --seed)
   --json               Output as JSON (single object, or an array with --file)
   --list-langs         Show all languages
   --list-countries     Show country → language mappings
@@ -47,6 +48,8 @@ Examples:
   greet-ninja Ahmed --phone +201234567890 --style formal
   greet-ninja --file names.txt --lang ur
   greet-ninja --file names.txt --mode welcome --group "Family"
+  greet-ninja Ali --random
+  greet-ninja Ali --random --seed 7 --json
 `);
   process.exit(0);
 }
@@ -76,10 +79,11 @@ const opts = {
 };
 for (const k of Object.keys(opts)) if (opts[k] === undefined) delete opts[k];
 
-const mode = flags.mode || 'greet';
+const mode = flags.random ? 'random' : (flags.mode || 'greet');
 const MODE_FNS = {
   greet: g.greet, welcome: g.welcome, first: g.first, time: g.timeGreet,
-  farewell: g.farewell, thank: g.thank, birthday: g.birthday, congrats: g.congrats
+  farewell: g.farewell, thank: g.thank, birthday: g.birthday, congrats: g.congrats,
+  random: g.greetRandom
 };
 const fn = MODE_FNS[mode] || g.greet;
 if (flags.hour !== undefined) opts.hour = Number(flags.hour);

@@ -193,15 +193,42 @@ function thank(name, options = {}) { return occasion(name, options, 5); }
 function birthday(name, options = {}) { return occasion(name, options, 6); }
 function congrats(name, options = {}) { return occasion(name, options, 7); }
 
-const MODES = { greet, welcome, first, time: timeGreet, farewell, thank, birthday, congrats };
+const MODES = { greet, welcome, first, time: timeGreet, farewell, thank, birthday, congrats, random: greetRandom };
+
+// randomLang(seed): pick one supported language code at random.
+// options.seed makes the pick deterministic (same seed → same language).
+function randomLang(seed) {
+  const rng = seed !== undefined ? mulberry32(seed) : null;
+  return pick(languages(), rng);
+}
+
+// greetRandom(name, options): greet in a random supported language.
+// options.seed makes the language pick deterministic; options.style
+// still applies. An explicit options.lang is ignored — the point is
+// random — use greet() when the language is known.
+function greetRandom(name, options = {}) {
+  return greet(name, { ...options, lang: randomLang(options.seed) });
+}
 
 // greetInfo(name, options): machine-readable form of a greeting — the
 // greeting text plus the resolved language and mode, for scripts and
 // pipelines (see the CLI --json flag). options.mode picks the greeting
 // ('greet' | 'welcome' | 'first' | 'time' | 'farewell' | 'thank' |
-// 'birthday' | 'congrats'); every other option passes through unchanged.
+// 'birthday' | 'congrats' | 'random'); every other option passes through unchanged.
 function greetInfo(name, options = {}) {
   const mode = options.mode || 'greet';
+  if (mode === 'random') {
+    // Pick the language once and use it for both the greeting and the
+    // reported lang, so --json never reports a different language than
+    // the one actually greeted in.
+    const lang = randomLang(options.seed);
+    return {
+      name: normName(name),
+      greeting: greet(name, { ...options, lang }),
+      lang,
+      mode
+    };
+  }
   const fn = MODES[mode] || greet;
   return {
     name: normName(name),
@@ -243,6 +270,8 @@ module.exports = {
   greetFor,
   greetAll,
   greetInfo,
+  greetRandom,
+  randomLang,
   welcome,
   first,
   timeGreet,

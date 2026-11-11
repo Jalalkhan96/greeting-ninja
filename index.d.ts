@@ -12,7 +12,7 @@ export interface GreetOptions {
 
 export type Mode =
   | 'greet' | 'welcome' | 'first' | 'time'
-  | 'farewell' | 'thank' | 'birthday' | 'congrats';
+  | 'farewell' | 'thank' | 'birthday' | 'congrats' | 'random';
 
 export interface GreetInfo {
   name: string;
@@ -29,6 +29,8 @@ export function greet(name: string | string[], options?: GreetOptions | string):
 export function greetFor(name: string | string[], phone?: string, options?: GreetOptions | string): string;
 export function greetAll(names: string[] | string, options?: GreetOptions): string[];
 export function greetInfo(name: string | string[], options?: GreetOptions): GreetInfo;
+export function greetRandom(name: string | string[], options?: GreetOptions): string;
+export function randomLang(seed?: number): string;
 export function welcome(name: string | string[], options?: GreetOptions | string): string;
 export function first(name: string | string[], options?: GreetOptions | string): string;
 export function timeGreet(name: string | string[], options?: GreetOptions | string): string;
