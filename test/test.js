@@ -307,3 +307,36 @@ test('CLI --file greets every name in the file', () => {
     fs.unlinkSync(tmp);
   }
 });
+
+test('greetRandom greets in a supported language', () => {
+  const out = g.greetRandom('Ali');
+  assert.match(out, /Ali/);
+  const info = g.greetInfo('Ali', { mode: 'random', seed: 7 });
+  assert.strictEqual(info.mode, 'random');
+  assert.ok(g.languages().includes(info.lang));
+  assert.match(info.greeting, /Ali/);
+});
+
+test('greetRandom is deterministic with a seed', () => {
+  assert.strictEqual(g.greetRandom('Ali', { seed: 7 }), g.greetRandom('Ali', { seed: 7 }));
+  assert.strictEqual(g.randomLang(7), g.randomLang(7));
+  assert.ok(g.languages().includes(g.randomLang(7)));
+});
+
+test('CLI --random flag greets in a random language', () => {
+  const { spawnSync } = require('node:child_process');
+  const path = require('node:path');
+  const cli = path.join(__dirname, '..', 'cli.js');
+  const run = spawnSync('node', [cli, 'Ali', '--random', '--seed', '7'], { encoding: 'utf8' });
+  assert.strictEqual(run.status, 0, run.stderr);
+  assert.match(run.stdout, /Ali/);
+  const json = spawnSync('node', [cli, 'Ali', '--random', '--seed', '7', '--json'], { encoding: 'utf8' });
+  assert.strictEqual(json.status, 0, json.stderr);
+  const info = JSON.parse(json.stdout);
+  assert.strictEqual(info.mode, 'random');
+  assert.ok(g.languages().includes(info.lang));
+  assert.match(info.greeting, /Ali/);
+  // --random --json reports the same language it greeted in
+  const plain = spawnSync('node', [cli, 'Ali', '--random', '--seed', '7'], { encoding: 'utf8' });
+  assert.strictEqual(plain.stdout.trim(), info.greeting);
+});
