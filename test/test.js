@@ -340,3 +340,80 @@ test('CLI --random flag greets in a random language', () => {
   const plain = spawnSync('node', [cli, 'Ali', '--random', '--seed', '7'], { encoding: 'utf8' });
   assert.strictEqual(plain.stdout.trim(), info.greeting);
 });
+
+test('greetIn() greets in several languages, in order', () => {
+  const out = g.greetIn('Ali', ['ur', 'en', 'ar'], { seed: 1 });
+  assert.strictEqual(out.length, 3);
+  assert.deepStrictEqual(out.map(o => o.lang), ['ur', 'en', 'ar']);
+  assert.strictEqual(out[0].mode, 'greet');
+  for (const o of out) assert.match(o.greeting, /Ali/);
+  assert.match(out[0].greeting, /سلام|ہیلو|آداب/);
+  assert.match(out[1].greeting, /Hello|Hi|Hey|Howdy/);
+  assert.match(out[2].greeting, /مرحبا|هلا/);
+});
+
+test('greetIn() accepts a comma-separated string and honours mode', () => {
+  const out = g.greetIn('Ali', 'ur, en', { seed: 1 });
+  assert.deepStrictEqual(out.map(o => o.lang), ['ur', 'en']);
+  const welcome = g.greetIn('Ali', ['en'], { mode: 'welcome', group: 'Family', seed: 1 });
+  assert.strictEqual(welcome.length, 1);
+  assert.strictEqual(welcome[0].mode, 'welcome');
+  assert.match(welcome[0].greeting, /Welcome Ali/);
+  assert.match(welcome[0].greeting, /Family/);
+});
+
+test('greetIn() rejects empty / missing language lists', () => {
+  assert.throws(() => g.greetIn('Ali', []), /At least one language code/);
+  assert.throws(() => g.greetIn('Ali', ''), /At least one language code/);
+  assert.throws(() => g.greetIn('Ali'), /At least one language code/);
+});
+
+test('CLI --langs prints one greeting per line', () => {
+  const { spawnSync } = require('node:child_process');
+  const path = require('node:path');
+  const cli = path.join(__dirname, '..', 'cli.js');
+  const run = spawnSync('node', [cli, 'Ali', '--langs', 'ur,en,ar', '--seed', '1'], { encoding: 'utf8' });
+  assert.strictEqual(run.status, 0, run.stderr);
+  const lines = run.stdout.trim().split('\n');
+  assert.strictEqual(lines.length, 3);
+  for (const line of lines) assert.match(line, /Ali/);
+  assert.match(lines[0], /سلام|ہیلو|آداب/);
+  assert.match(lines[1], /Hello|Hi|Hey|Howdy/);
+  assert.match(lines[2], /مرحبا|هلا/);
+});
+
+test('CLI --langs --json prints a parseable array in order', () => {
+  const { spawnSync } = require('node:child_process');
+  const path = require('node:path');
+  const cli = path.join(__dirname, '..', 'cli.js');
+  const run = spawnSync('node', [cli, 'Ali', '--langs', 'ur,en', '--seed', '1', '--json'], { encoding: 'utf8' });
+  assert.strictEqual(run.status, 0, run.stderr);
+  const arr = JSON.parse(run.stdout);
+  assert.strictEqual(arr.length, 2);
+  assert.deepStrictEqual(arr.map(o => o.lang), ['ur', 'en']);
+  assert.strictEqual(arr[0].mode, 'greet');
+  assert.match(arr[0].greeting, /Ali/);
+  const bad = spawnSync('node', [cli, 'Ali', '--langs', ' , ', '--seed', '1'], { encoding: 'utf8' });
+  assert.notStrictEqual(bad.status, 0);
+  assert.match(bad.stderr, /--langs needs at least one language code/);
+});
+
+test('CLI --file --langs greets each name in each language', () => {
+  const { spawnSync } = require('node:child_process');
+  const fs = require('node:fs');
+  const os = require('node:os');
+  const path = require('node:path');
+  const cli = path.join(__dirname, '..', 'cli.js');
+  const tmp = path.join(os.tmpdir(), 'gn-langs-' + Date.now() + '.txt');
+  fs.writeFileSync(tmp, 'Ali\n\nSara\n');
+  try {
+    const run = spawnSync('node', [cli, '--file', tmp, '--langs', 'ur,en', '--seed', '1'], { encoding: 'utf8' });
+    assert.strictEqual(run.status, 0, run.stderr);
+    const lines = run.stdout.trim().split('\n');
+    assert.strictEqual(lines.length, 4); // 2 names x 2 languages
+    assert.match(lines[0], /Ali/);
+    assert.match(lines[2], /Sara/);
+  } finally {
+    fs.unlinkSync(tmp);
+  }
+});
