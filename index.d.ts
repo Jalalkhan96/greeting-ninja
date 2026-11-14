@@ -21,6 +21,12 @@ export interface GreetInfo {
   mode: string;
 }
 
+export interface GreetInResult {
+  lang: string;
+  greeting: string;
+  mode: string;
+}
+
 export interface WhatsAppGreeting extends GreetInfo {
   payload: { text: string; mentions?: string[] };
 }
@@ -28,6 +34,7 @@ export interface WhatsAppGreeting extends GreetInfo {
 export function greet(name: string | string[], options?: GreetOptions | string): string;
 export function greetFor(name: string | string[], phone?: string, options?: GreetOptions | string): string;
 export function greetAll(names: string[] | string, options?: GreetOptions): string[];
+export function greetIn(name: string | string[], langs: string[] | string, options?: GreetOptions): GreetInResult[];
 export function greetInfo(name: string | string[], options?: GreetOptions): GreetInfo;
 export function greetRandom(name: string | string[], options?: GreetOptions): string;
 export function randomLang(seed?: number): string;

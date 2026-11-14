@@ -129,6 +129,25 @@ function greetAll(names, options = {}) {
     .map(n => fn(n, options));
 }
 
+// greetIn(name, langs, options): greet the same person in several
+// languages at once — one greeting per language, each tagged with its
+// lang code, in the order given. langs is an array of codes or a
+// comma-separated string ("ur,en,ar"). options.mode picks the greeting
+// ('greet' | 'welcome' | 'first' | 'time' | ...); 'random' is treated as
+// 'greet' here, since the languages are given explicitly. Unknown codes
+// fall back to English, like greet(). Returns
+// [{ lang, greeting, mode }, ...].
+function greetIn(name, langs, options = {}) {
+  if (typeof langs === 'string') langs = langs.split(',').map(s => s.trim()).filter(Boolean);
+  if (!Array.isArray(langs) || !langs.length) throw new Error('At least one language code is required — pass e.g. greetIn("Ali", ["ur", "en"])');
+  const opts = { ...options };
+  if (opts.mode === 'random') opts.mode = 'greet';
+  return langs.map(code => {
+    const info = greetInfo(name, { ...opts, lang: code });
+    return { lang: info.lang, greeting: info.greeting, mode: info.mode };
+  });
+}
+
 function welcome(name, options = {}) {
   if (typeof options === 'string') options = { lang: options };
   name = normName(name);
@@ -269,6 +288,7 @@ module.exports = {
   greet,
   greetFor,
   greetAll,
+  greetIn,
   greetInfo,
   greetRandom,
   randomLang,

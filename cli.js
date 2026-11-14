@@ -14,7 +14,7 @@ for (let i = 0; i < argv.length; i++) {
   } else args.push(a);
 }
 
-const showHelp = flags.help || (!args.length && !flags.name && !flags.file && !flags.json && !flags.random && !flags['list-langs'] && !flags['list-countries']);
+const showHelp = flags.help || (!args.length && !flags.name && !flags.file && !flags.json && !flags.random && !flags.langs && !flags['list-langs'] && !flags['list-countries']);
 
 if (showHelp) {
   console.log(`greet-ninja — greet anyone in their own language 🥷
@@ -28,6 +28,7 @@ Options:
   --file <path>        Greet every name in a text file (one per line)
   --phone <number>     Auto-detect language from WhatsApp number
   --lang <code>        Force a language (en, ur, hi, ar, ja…)
+  --langs <codes>      Greet in several languages at once, e.g. ur,en,ar (one greeting per line)
   --style <name>       formal | casual | emoji | upper | lower | minimal
   --mode <type>        greet (default) | welcome | first | time | farewell | thank | birthday | congrats
   --hour <0-23>        Hour for --mode time (default: current hour)
@@ -50,6 +51,8 @@ Examples:
   greet-ninja --file names.txt --mode welcome --group "Family"
   greet-ninja Ali --random
   greet-ninja Ali --random --seed 7 --json
+  greet-ninja Ali --langs ur,en,ar --seed 1
+  greet-ninja Ali --langs ur,en --json
 `);
   process.exit(0);
 }
@@ -80,6 +83,13 @@ const opts = {
 for (const k of Object.keys(opts)) if (opts[k] === undefined) delete opts[k];
 
 const mode = flags.random ? 'random' : (flags.mode || 'greet');
+const langs = flags.langs !== undefined
+  ? String(flags.langs).split(',').map(s => s.trim()).filter(Boolean)
+  : null;
+if (flags.langs !== undefined && !langs.length) {
+  console.error('Error: --langs needs at least one language code, e.g. --langs ur,en,ar');
+  process.exit(1);
+}
 const MODE_FNS = {
   greet: g.greet, welcome: g.welcome, first: g.first, time: g.timeGreet,
   farewell: g.farewell, thank: g.thank, birthday: g.birthday, congrats: g.congrats,
@@ -100,18 +110,20 @@ if (flags.file) {
   }
   try {
     const names = text.split(/\r?\n/);
+    const clean = names.map(n => (typeof n === 'string' ? n.trim() : n)).filter(n => n);
     if (flags.json) {
-      const out = names
-        .map(n => (typeof n === 'string' ? n.trim() : n))
-        .filter(n => n)
-        .map(n => g.greetInfo(n, { ...opts, mode }));
+      const out = langs
+        ? clean.flatMap(n => g.greetIn(n, langs, { ...opts, mode }))
+        : clean.map(n => g.greetInfo(n, { ...opts, mode }));
       if (!out.length) {
         console.error('Error: no names found in "' + flags.file + '"');
         process.exit(1);
       }
       console.log(JSON.stringify(out));
     } else {
-      const out = g.greetAll(names, { ...opts, mode });
+      const out = langs
+        ? clean.flatMap(n => g.greetIn(n, langs, { ...opts, mode }).map(o => o.greeting))
+        : g.greetAll(names, { ...opts, mode });
       if (!out.length) {
         console.error('Error: no names found in "' + flags.file + '"');
         process.exit(1);
@@ -126,7 +138,11 @@ if (flags.file) {
 }
 
 try {
-  if (flags.json) console.log(JSON.stringify(g.greetInfo(name, { ...opts, mode })));
+  if (langs) {
+    const out = g.greetIn(name, langs, { ...opts, mode });
+    if (flags.json) console.log(JSON.stringify(out));
+    else console.log(out.map(o => o.greeting).join('\n'));
+  } else if (flags.json) console.log(JSON.stringify(g.greetInfo(name, { ...opts, mode })));
   else console.log(fn(name, opts));
 } catch (err) {
   console.error('Error: ' + err.message);
