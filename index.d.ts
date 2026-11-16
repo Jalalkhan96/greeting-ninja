@@ -8,6 +8,8 @@ export interface GreetOptions {
   date?: Date;
   mode?: Mode;
   mentions?: string[];
+  subtitle?: string;
+  border?: 'double' | 'single' | 'plain';
 }
 
 export type Mode =
@@ -38,6 +40,8 @@ export function greetIn(name: string | string[], langs: string[] | string, optio
 export function greetInfo(name: string | string[], options?: GreetOptions): GreetInfo;
 export function greetRandom(name: string | string[], options?: GreetOptions): string;
 export function randomLang(seed?: number): string;
+export function greetCard(name: string | string[], options?: GreetOptions): string;
+export function frameText(lines: string[], border?: 'double' | 'single' | 'plain'): string;
 export function welcome(name: string | string[], options?: GreetOptions | string): string;
 export function first(name: string | string[], options?: GreetOptions | string): string;
 export function timeGreet(name: string | string[], options?: GreetOptions | string): string;

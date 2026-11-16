@@ -9,12 +9,12 @@ for (let i = 0; i < argv.length; i++) {
   const a = argv[i];
   if (a.startsWith('--')) {
     const k = a.slice(2);
-    if (['help', 'list-langs', 'list-countries', 'json', 'random'].includes(k)) flags[k] = true;
+    if (['help', 'list-langs', 'list-countries', 'json', 'random', 'card'].includes(k)) flags[k] = true;
     else flags[k] = argv[++i];
   } else args.push(a);
 }
 
-const showHelp = flags.help || (!args.length && !flags.name && !flags.file && !flags.json && !flags.random && !flags.langs && !flags['list-langs'] && !flags['list-countries']);
+const showHelp = flags.help || (!args.length && !flags.name && !flags.file && !flags.json && !flags.random && !flags.card && !flags.langs && !flags['list-langs'] && !flags['list-countries']);
 
 if (showHelp) {
   console.log(`greet-ninja — greet anyone in their own language 🥷
@@ -35,6 +35,9 @@ Options:
   --group <name>       Group name for welcome mode
   --seed <number>      Deterministic output
   --random             Greet in a random supported language (seedable with --seed)
+  --card               Print the greeting inside a bordered card
+  --subtitle <text>    Extra line inside the card (single greeting)
+  --border <style>     Card frame: double (default) | single | plain
   --json               Output as JSON (single object, or an array with --file)
   --list-langs         Show all languages
   --list-countries     Show country → language mappings
@@ -53,6 +56,8 @@ Examples:
   greet-ninja Ali --random --seed 7 --json
   greet-ninja Ali --langs ur,en,ar --seed 1
   greet-ninja Ali --langs ur,en --json
+  greet-ninja Ali --card --subtitle "Happy Birthday!"
+  greet-ninja Ali --mode birthday --card --border single
 `);
   process.exit(0);
 }
@@ -78,6 +83,8 @@ const opts = {
   phone: flags.phone,
   style: flags.style,
   group: flags.group,
+  subtitle: flags.subtitle,
+  border: flags.border,
   seed: flags.seed !== undefined ? Number(flags.seed) : undefined
 };
 for (const k of Object.keys(opts)) if (opts[k] === undefined) delete opts[k];
@@ -119,7 +126,9 @@ if (flags.file) {
         console.error('Error: no names found in "' + flags.file + '"');
         process.exit(1);
       }
-      console.log(JSON.stringify(out));
+      console.log(JSON.stringify(flags.card
+        ? out.map(o => ({ ...o, card: g.frameText([o.greeting], opts.border) }))
+        : out));
     } else {
       const out = langs
         ? clean.flatMap(n => g.greetIn(n, langs, { ...opts, mode }).map(o => o.greeting))
@@ -128,7 +137,9 @@ if (flags.file) {
         console.error('Error: no names found in "' + flags.file + '"');
         process.exit(1);
       }
-      console.log(out.join('\n'));
+      console.log(flags.card
+        ? out.map(t => g.frameText([t], opts.border)).join('\n\n')
+        : out.join('\n'));
     }
   } catch (err) {
     console.error('Error: ' + err.message);
@@ -140,9 +151,13 @@ if (flags.file) {
 try {
   if (langs) {
     const out = g.greetIn(name, langs, { ...opts, mode });
-    if (flags.json) console.log(JSON.stringify(out));
+    if (flags.json) console.log(JSON.stringify(flags.card ? out.map(o => ({ ...o, card: g.frameText([o.greeting], opts.border) })) : out));
+    else if (flags.card) console.log(out.map(o => g.frameText([o.greeting], opts.border)).join('\n\n'));
     else console.log(out.map(o => o.greeting).join('\n'));
-  } else if (flags.json) console.log(JSON.stringify(g.greetInfo(name, { ...opts, mode })));
+  } else if (flags.json) {
+    const info = g.greetInfo(name, { ...opts, mode });
+    console.log(JSON.stringify(flags.card ? { ...info, card: g.greetCard(name, { ...opts, mode }) } : info));
+  } else if (flags.card) console.log(g.greetCard(name, { ...opts, mode }));
   else console.log(fn(name, opts));
 } catch (err) {
   console.error('Error: ' + err.message);

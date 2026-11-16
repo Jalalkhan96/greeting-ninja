@@ -257,6 +257,33 @@ function greetInfo(name, options = {}) {
   };
 }
 
+// ─── v5: greeting cards ───
+// frameText(lines, border): draw a box around one or more lines.
+// border: 'double' (╔═╗, default), 'single' (┌─┐) or 'plain' (+-+).
+function frameText(lines, border) {
+  const frames = {
+    double: ['╔', '═', '╗', '║', '╚', '╝'],
+    single: ['┌', '─', '┐', '│', '└', '┘'],
+    plain: ['+', '-', '+', '|', '+', '+']
+  };
+  const [tl, h, tr, v, bl, br] = frames[border] || frames.double;
+  const width = Math.max(...lines.map(l => l.length));
+  const top = tl + h.repeat(width + 2) + tr;
+  const bottom = bl + h.repeat(width + 2) + br;
+  const body = lines.map(l => v + ' ' + l.padEnd(width) + ' ' + v).join('\n');
+  return [top, body, bottom].join('\n');
+}
+
+// greetCard(name, options): the greeting (via greetInfo, so mode/lang/
+// phone/seed all apply) inside a bordered card, with an optional
+// options.subtitle line under it. options.border picks the frame.
+function greetCard(name, options = {}) {
+  const info = greetInfo(name, options);
+  const lines = [info.greeting];
+  if (options.subtitle !== undefined && options.subtitle !== null && String(options.subtitle) !== '') lines.push(String(options.subtitle));
+  return frameText(lines, options.border);
+}
+
 // ─── v4: WhatsApp / Baileys helpers ───
 // forWhatsApp(name, options): a sendMessage-ready payload object.
 //   const p = g.forWhatsApp('Ali', { phone: '+92...', mode: 'welcome', group: 'Team' });
@@ -292,6 +319,8 @@ module.exports = {
   greetInfo,
   greetRandom,
   randomLang,
+  greetCard,
+  frameText,
   welcome,
   first,
   timeGreet,
