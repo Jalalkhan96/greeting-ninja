@@ -417,3 +417,57 @@ test('CLI --file --langs greets each name in each language', () => {
     fs.unlinkSync(tmp);
   }
 });
+
+test('greetCard() draws a double-bordered box around the greeting', () => {
+  const card = g.greetCard('Ali', { lang: 'en', seed: 1 });
+  const lines = card.split('\n');
+  assert.strictEqual(lines.length, 3);
+  assert.match(lines[0], /^╔═+╗$/);
+  assert.match(lines[1], /^║ .*Ali.* ║$/);
+  assert.match(lines[2], /^╚═+╝$/);
+  assert.strictEqual(lines[0].length, lines[1].length);
+  assert.strictEqual(lines[0].length, lines[2].length);
+});
+
+test('greetCard() adds a subtitle line and widens the box to fit it', () => {
+  const card = g.greetCard('Ali', { lang: 'en', seed: 1, subtitle: 'Happy Birthday!' });
+  const lines = card.split('\n');
+  assert.strictEqual(lines.length, 4);
+  assert.match(lines[2], /Happy Birthday!/);
+  assert.ok(lines.every(l => l.length === lines[0].length));
+});
+
+test('greetCard() honours border styles and falls back to double', () => {
+  const single = g.greetCard('Ali', { lang: 'en', seed: 1, border: 'single' });
+  assert.match(single.split('\n')[0], /^┌─+┐$/);
+  assert.match(single.split('\n')[2], /^└─+┘$/);
+  const plain = g.greetCard('Ali', { lang: 'en', seed: 1, border: 'plain' });
+  assert.match(plain.split('\n')[0], /^\+-+\+$/);
+  assert.match(plain.split('\n')[1], /^\| .*Ali.* \|$/);
+  const unknown = g.greetCard('Ali', { lang: 'en', seed: 1, border: 'fancy' });
+  assert.match(unknown.split('\n')[0], /^╔═+╗$/);
+});
+
+test('greetCard() honours mode and language (welcome in Urdu)', () => {
+  const card = g.greetCard('Ali', { phone: '+923001234567', mode: 'welcome', group: 'Family', seed: 1 });
+  assert.match(card, /Ali/);
+  assert.match(card, /Family/);
+  assert.match(card, /خوش آمدید/);
+});
+
+test('CLI --card prints a bordered card; --card --json adds a card field', () => {
+  const { spawnSync } = require('node:child_process');
+  const path = require('node:path');
+  const cli = path.join(__dirname, '..', 'cli.js');
+  const run = spawnSync('node', [cli, 'Ali', '--lang', 'en', '--seed', '1', '--card', '--subtitle', 'Happy Birthday!'], { encoding: 'utf8' });
+  assert.strictEqual(run.status, 0, run.stderr);
+  assert.match(run.stdout, /╔/);
+  assert.match(run.stdout, /Ali/);
+  assert.match(run.stdout, /Happy Birthday!/);
+  const json = spawnSync('node', [cli, 'Ali', '--lang', 'en', '--seed', '1', '--card', '--json'], { encoding: 'utf8' });
+  assert.strictEqual(json.status, 0, json.stderr);
+  const obj = JSON.parse(json.stdout);
+  assert.match(obj.card, /╔/);
+  assert.match(obj.card, /Ali/);
+  assert.strictEqual(obj.greeting, obj.card.split('\n')[1].trim().replace(/^║ /, '').replace(/ ║$/, ''));
+});
