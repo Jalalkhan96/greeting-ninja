@@ -471,3 +471,48 @@ test('CLI --card prints a bordered card; --card --json adds a card field', () =>
   assert.match(obj.card, /Ali/);
   assert.strictEqual(obj.greeting, obj.card.split('\n')[1].trim().replace(/^║ /, '').replace(/ ║$/, ''));
 });
+
+test('eid() greets in Urdu, Arabic and English', () => {
+  assert.match(g.eid('Ali', { lang: 'ur' }), /عید مبارک/);
+  assert.match(g.eid('Ali', { lang: 'ur' }), /Ali/);
+  assert.match(g.eid('Omar', { lang: 'ar' }), /عيد مبارك/);
+  assert.strictEqual(g.eid('Sara', { lang: 'en' }), 'Eid Mubarak, Sara! 🌙🎉');
+  assert.match(g.eid('Mei', { lang: 'zh' }), /开斋节快乐/);
+});
+
+test('ramadan() greets in Arabic and falls back to English for other languages', () => {
+  assert.match(g.ramadan('Omar', { lang: 'ar' }), /رمضان مبارك/);
+  assert.match(g.ramadan('Ali', { lang: 'ur' }), /رمضان مبارک/);
+  assert.strictEqual(g.ramadan('Sara', { lang: 'en' }), 'Ramadan Mubarak, Sara! 🌙');
+  // A language without extras falls back to the English extras.
+  assert.strictEqual(g.ramadan('Sara', { lang: 'xx' }), 'Ramadan Mubarak, Sara! 🌙');
+  assert.strictEqual(g.eid('Sara', { lang: 'xx' }), 'Eid Mubarak, Sara! 🌙🎉');
+});
+
+test('greetInfo() honours mode eid and ramadan', () => {
+  const eidInfo = g.greetInfo('Ali', { lang: 'ur', mode: 'eid' });
+  assert.strictEqual(eidInfo.lang, 'ur');
+  assert.strictEqual(eidInfo.mode, 'eid');
+  assert.match(eidInfo.greeting, /عید مبارک/);
+  const ramadanInfo = g.greetInfo('Ali', { phone: '+923001234567', mode: 'ramadan' });
+  assert.strictEqual(ramadanInfo.lang, 'ur');
+  assert.strictEqual(ramadanInfo.mode, 'ramadan');
+  assert.match(ramadanInfo.greeting, /رمضان مبارک/);
+  // greetIn honours the new modes too.
+  const multi = g.greetIn('Ali', ['ur', 'en'], { mode: 'eid' });
+  assert.strictEqual(multi.length, 2);
+  assert.match(multi[0].greeting, /عید مبارک/);
+  assert.strictEqual(multi[1].greeting, 'Eid Mubarak, Ali! 🌙🎉');
+});
+
+test('CLI --mode eid and --mode ramadan print the greeting', () => {
+  const { spawnSync } = require('node:child_process');
+  const path = require('node:path');
+  const cli = path.join(__dirname, '..', 'cli.js');
+  const eid = spawnSync('node', [cli, 'Ali', '--mode', 'eid', '--phone', '+923001234567'], { encoding: 'utf8' });
+  assert.strictEqual(eid.status, 0, eid.stderr);
+  assert.match(eid.stdout, /عید مبارک/);
+  const ramadan = spawnSync('node', [cli, 'Sara', '--mode', 'ramadan', '--lang', 'ar'], { encoding: 'utf8' });
+  assert.strictEqual(ramadan.status, 0, ramadan.stderr);
+  assert.match(ramadan.stdout, /رمضان مبارك/);
+});
