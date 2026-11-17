@@ -14,7 +14,7 @@ export interface GreetOptions {
 
 export type Mode =
   | 'greet' | 'welcome' | 'first' | 'time'
-  | 'farewell' | 'thank' | 'birthday' | 'congrats' | 'random';
+  | 'farewell' | 'thank' | 'birthday' | 'congrats' | 'eid' | 'ramadan' | 'random';
 
 export interface GreetInfo {
   name: string;
@@ -49,6 +49,8 @@ export function farewell(name: string | string[], options?: GreetOptions | strin
 export function thank(name: string | string[], options?: GreetOptions | string): string;
 export function birthday(name: string | string[], options?: GreetOptions | string): string;
 export function congrats(name: string | string[], options?: GreetOptions | string): string;
+export function eid(name: string | string[], options?: GreetOptions | string): string;
+export function ramadan(name: string | string[], options?: GreetOptions | string): string;
 export function forWhatsApp(name: string | string[], options?: GreetOptions): WhatsAppGreeting;
 export function phoneToLang(phone?: string | null): string | null;
 export function validatePhone(phone?: string | null): string | null;
