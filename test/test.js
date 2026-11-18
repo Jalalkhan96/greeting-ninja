@@ -516,3 +516,48 @@ test('CLI --mode eid and --mode ramadan print the greeting', () => {
   assert.strictEqual(ramadan.status, 0, ramadan.stderr);
   assert.match(ramadan.stdout, /رمضان مبارك/);
 });
+
+test('newyear() greets in Urdu, Arabic and English', () => {
+  assert.match(g.newyear('Ali', { lang: 'ur' }), /نیا سال مبارک/);
+  assert.match(g.newyear('Ali', { lang: 'ur' }), /Ali/);
+  assert.match(g.newyear('Omar', { lang: 'ar' }), /سنة جديدة سعيدة/);
+  assert.strictEqual(g.newyear('Sara', { lang: 'en' }), 'Happy New Year, Sara! 🎉🥂');
+  assert.match(g.newyear('Mei', { lang: 'zh' }), /新年快乐/);
+});
+
+test('anniversary() greets in French and falls back to English for other languages', () => {
+  assert.match(g.anniversary('Sara', { lang: 'fr' }), /Joyeux anniversaire de mariage/);
+  assert.match(g.anniversary('Ali', { lang: 'ur' }), /شادی کی سالگرہ مبارک/);
+  assert.strictEqual(g.anniversary('Sara', { lang: 'en' }), 'Happy Anniversary, Sara! 💐🎉');
+  // A language without extras falls back to the English extras.
+  assert.strictEqual(g.anniversary('Sara', { lang: 'xx' }), 'Happy Anniversary, Sara! 💐🎉');
+  assert.strictEqual(g.newyear('Sara', { lang: 'xx' }), 'Happy New Year, Sara! 🎉🥂');
+});
+
+test('greetInfo() honours mode newyear and anniversary', () => {
+  const newyearInfo = g.greetInfo('Ali', { lang: 'ur', mode: 'newyear' });
+  assert.strictEqual(newyearInfo.lang, 'ur');
+  assert.strictEqual(newyearInfo.mode, 'newyear');
+  assert.match(newyearInfo.greeting, /نیا سال مبارک/);
+  const anniversaryInfo = g.greetInfo('Ali', { phone: '+923001234567', mode: 'anniversary' });
+  assert.strictEqual(anniversaryInfo.lang, 'ur');
+  assert.strictEqual(anniversaryInfo.mode, 'anniversary');
+  assert.match(anniversaryInfo.greeting, /شادی کی سالگرہ مبارک/);
+  // greetIn honours the new modes too.
+  const multi = g.greetIn('Ali', ['ur', 'en'], { mode: 'newyear' });
+  assert.strictEqual(multi.length, 2);
+  assert.match(multi[0].greeting, /نیا سال مبارک/);
+  assert.strictEqual(multi[1].greeting, 'Happy New Year, Ali! 🎉🥂');
+});
+
+test('CLI --mode newyear and --mode anniversary print the greeting', () => {
+  const { spawnSync } = require('node:child_process');
+  const path = require('node:path');
+  const cli = path.join(__dirname, '..', 'cli.js');
+  const newyear = spawnSync('node', [cli, 'Ali', '--mode', 'newyear', '--phone', '+923001234567'], { encoding: 'utf8' });
+  assert.strictEqual(newyear.status, 0, newyear.stderr);
+  assert.match(newyear.stdout, /نیا سال مبارک/);
+  const anniversary = spawnSync('node', [cli, 'Sara', '--mode', 'anniversary', '--lang', 'fr'], { encoding: 'utf8' });
+  assert.strictEqual(anniversary.status, 0, anniversary.stderr);
+  assert.match(anniversary.stdout, /Joyeux anniversaire de mariage/);
+});
