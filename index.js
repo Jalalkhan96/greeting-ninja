@@ -208,7 +208,8 @@ function occasion(name, options, idx) {
 // farewell(name, options) / thank(name, options) /
 // birthday(name, options) / congrats(name, options) /
 // eid(name, options) / ramadan(name, options) /
-// newyear(name, options) / anniversary(name, options)
+// newyear(name, options) / anniversary(name, options) /
+// wedding(name, options) / graduation(name, options)
 function farewell(name, options = {}) { return occasion(name, options, 4); }
 function thank(name, options = {}) { return occasion(name, options, 5); }
 function birthday(name, options = {}) { return occasion(name, options, 6); }
@@ -217,8 +218,10 @@ function eid(name, options = {}) { return occasion(name, options, 8); }
 function ramadan(name, options = {}) { return occasion(name, options, 9); }
 function newyear(name, options = {}) { return occasion(name, options, 10); }
 function anniversary(name, options = {}) { return occasion(name, options, 11); }
+function wedding(name, options = {}) { return occasion(name, options, 12); }
+function graduation(name, options = {}) { return occasion(name, options, 13); }
 
-const MODES = { greet, welcome, first, time: timeGreet, farewell, thank, birthday, congrats, eid, ramadan, newyear, anniversary, random: greetRandom };
+const MODES = { greet, welcome, first, time: timeGreet, farewell, thank, birthday, congrats, eid, ramadan, newyear, anniversary, wedding, graduation, random: greetRandom };
 
 // randomLang(seed): pick one supported language code at random.
 // options.seed makes the pick deterministic (same seed → same language).
@@ -239,7 +242,8 @@ function greetRandom(name, options = {}) {
 // greeting text plus the resolved language and mode, for scripts and
 // pipelines (see the CLI --json flag). options.mode picks the greeting
 // ('greet' | 'welcome' | 'first' | 'time' | 'farewell' | 'thank' |
-// 'birthday' | 'congrats' | 'eid' | 'ramadan' | 'newyear' | 'anniversary' | 'random'); every other option passes through unchanged.
+// 'birthday' | 'congrats' | 'eid' | 'ramadan' | 'newyear' | 'anniversary' |
+// 'wedding' | 'graduation' | 'random'); every other option passes through unchanged.
 function greetInfo(name, options = {}) {
   const mode = options.mode || 'greet';
   if (mode === 'random') {
@@ -338,6 +342,8 @@ module.exports = {
   ramadan,
   newyear,
   anniversary,
+  wedding,
+  graduation,
   forWhatsApp,
   phoneToLang,
   validatePhone,
