@@ -561,3 +561,48 @@ test('CLI --mode newyear and --mode anniversary print the greeting', () => {
   assert.strictEqual(anniversary.status, 0, anniversary.stderr);
   assert.match(anniversary.stdout, /Joyeux anniversaire de mariage/);
 });
+
+test('wedding() greets in Urdu, Arabic and English', () => {
+  assert.match(g.wedding('Ali', { lang: 'ur' }), /شادی مبارک/);
+  assert.match(g.wedding('Ali', { lang: 'ur' }), /Ali/);
+  assert.match(g.wedding('Omar', { lang: 'ar' }), /تهانينا على زواجك/);
+  assert.strictEqual(g.wedding('Sara', { lang: 'en' }), 'Congratulations on your wedding, Sara! 💍🎉');
+  assert.match(g.wedding('Mei', { lang: 'zh' }), /新婚快乐/);
+});
+
+test('graduation() greets in French and falls back to English for other languages', () => {
+  assert.match(g.graduation('Sara', { lang: 'fr' }), /Félicitations pour ton diplôme/);
+  assert.match(g.graduation('Ali', { lang: 'ur' }), /گریجویشن مبارک/);
+  assert.strictEqual(g.graduation('Sara', { lang: 'en' }), 'Congratulations on your graduation, Sara! 🎓🎉');
+  // A language without extras falls back to the English extras.
+  assert.strictEqual(g.graduation('Sara', { lang: 'xx' }), 'Congratulations on your graduation, Sara! 🎓🎉');
+  assert.strictEqual(g.wedding('Sara', { lang: 'xx' }), 'Congratulations on your wedding, Sara! 💍🎉');
+});
+
+test('greetInfo() honours mode wedding and graduation', () => {
+  const weddingInfo = g.greetInfo('Ali', { lang: 'ur', mode: 'wedding' });
+  assert.strictEqual(weddingInfo.lang, 'ur');
+  assert.strictEqual(weddingInfo.mode, 'wedding');
+  assert.match(weddingInfo.greeting, /شادی مبارک/);
+  const graduationInfo = g.greetInfo('Ali', { phone: '+923001234567', mode: 'graduation' });
+  assert.strictEqual(graduationInfo.lang, 'ur');
+  assert.strictEqual(graduationInfo.mode, 'graduation');
+  assert.match(graduationInfo.greeting, /گریجویشن مبارک/);
+  // greetIn honours the new modes too.
+  const multi = g.greetIn('Ali', ['ur', 'en'], { mode: 'wedding' });
+  assert.strictEqual(multi.length, 2);
+  assert.match(multi[0].greeting, /شادی مبارک/);
+  assert.strictEqual(multi[1].greeting, 'Congratulations on your wedding, Ali! 💍🎉');
+});
+
+test('CLI --mode wedding and --mode graduation print the greeting', () => {
+  const { spawnSync } = require('node:child_process');
+  const path = require('node:path');
+  const cli = path.join(__dirname, '..', 'cli.js');
+  const wedding = spawnSync('node', [cli, 'Ali', '--mode', 'wedding', '--phone', '+923001234567'], { encoding: 'utf8' });
+  assert.strictEqual(wedding.status, 0, wedding.stderr);
+  assert.match(wedding.stdout, /شادی مبارک/);
+  const graduation = spawnSync('node', [cli, 'Sara', '--mode', 'graduation', '--lang', 'en'], { encoding: 'utf8' });
+  assert.strictEqual(graduation.status, 0, graduation.stderr);
+  assert.match(graduation.stdout, /Congratulations on your graduation, Sara! 🎓🎉/);
+});
