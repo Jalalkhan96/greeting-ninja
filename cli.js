@@ -30,7 +30,7 @@ Options:
   --lang <code>        Force a language (en, ur, hi, ar, ja…)
   --langs <codes>      Greet in several languages at once, e.g. ur,en,ar (one greeting per line)
   --style <name>       formal | casual | emoji | upper | lower | minimal
-  --mode <type>        greet (default) | welcome | first | time | farewell | thank | birthday | congrats | eid | ramadan | newyear | anniversary | wedding | graduation
+  --mode <type>        greet (default) | welcome | first | time | farewell | thank | birthday | congrats | eid | ramadan | newyear | anniversary | wedding | graduation | getwell | goodluck
   --hour <0-23>        Hour for --mode time (default: current hour)
   --group <name>       Group name for welcome mode
   --seed <number>      Deterministic output
@@ -64,6 +64,8 @@ Examples:
   greet-ninja Sara --mode anniversary --lang fr
   greet-ninja Ali --mode wedding --phone +923001234567
   greet-ninja Sara --mode graduation --lang en
+  greet-ninja Ali --mode getwell --phone +923001234567
+  greet-ninja Sara --mode goodluck --lang fr
 `);
   process.exit(0);
 }
@@ -108,6 +110,7 @@ const MODE_FNS = {
   farewell: g.farewell, thank: g.thank, birthday: g.birthday, congrats: g.congrats,
   eid: g.eid, ramadan: g.ramadan, newyear: g.newyear, anniversary: g.anniversary,
   wedding: g.wedding, graduation: g.graduation,
+  getwell: g.getwell, goodluck: g.goodluck,
   random: g.greetRandom
 };
 const fn = MODE_FNS[mode] || g.greet;
