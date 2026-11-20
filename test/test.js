@@ -606,3 +606,48 @@ test('CLI --mode wedding and --mode graduation print the greeting', () => {
   assert.strictEqual(graduation.status, 0, graduation.stderr);
   assert.match(graduation.stdout, /Congratulations on your graduation, Sara! 🎓🎉/);
 });
+
+test('getwell() greets in Urdu, Arabic and English', () => {
+  assert.match(g.getwell('Ali', { lang: 'ur' }), /جلد صحت یاب ہو/);
+  assert.match(g.getwell('Ali', { lang: 'ur' }), /Ali/);
+  assert.match(g.getwell('Omar', { lang: 'ar' }), /شفاك الله/);
+  assert.strictEqual(g.getwell('Sara', { lang: 'en' }), 'Get well soon, Sara! 🌸');
+  assert.match(g.getwell('Mei', { lang: 'zh' }), /早日康复/);
+});
+
+test('goodluck() greets in French and falls back to English for other languages', () => {
+  assert.match(g.goodluck('Sara', { lang: 'fr' }), /Bonne chance/);
+  assert.match(g.goodluck('Ali', { lang: 'ur' }), /نیک تمنائیں/);
+  assert.strictEqual(g.goodluck('Sara', { lang: 'en' }), 'Good luck, Sara! 🍀');
+  // A language without extras falls back to the English extras.
+  assert.strictEqual(g.goodluck('Sara', { lang: 'xx' }), 'Good luck, Sara! 🍀');
+  assert.strictEqual(g.getwell('Sara', { lang: 'xx' }), 'Get well soon, Sara! 🌸');
+});
+
+test('greetInfo() honours mode getwell and goodluck', () => {
+  const getwellInfo = g.greetInfo('Ali', { lang: 'ur', mode: 'getwell' });
+  assert.strictEqual(getwellInfo.lang, 'ur');
+  assert.strictEqual(getwellInfo.mode, 'getwell');
+  assert.match(getwellInfo.greeting, /جلد صحت یاب ہو/);
+  const goodluckInfo = g.greetInfo('Ali', { phone: '+923001234567', mode: 'goodluck' });
+  assert.strictEqual(goodluckInfo.lang, 'ur');
+  assert.strictEqual(goodluckInfo.mode, 'goodluck');
+  assert.match(goodluckInfo.greeting, /نیک تمنائیں/);
+  // greetIn honours the new modes too.
+  const multi = g.greetIn('Ali', ['ur', 'en'], { mode: 'getwell' });
+  assert.strictEqual(multi.length, 2);
+  assert.match(multi[0].greeting, /جلد صحت یاب ہو/);
+  assert.strictEqual(multi[1].greeting, 'Get well soon, Ali! 🌸');
+});
+
+test('CLI --mode getwell and --mode goodluck print the greeting', () => {
+  const { spawnSync } = require('node:child_process');
+  const path = require('node:path');
+  const cli = path.join(__dirname, '..', 'cli.js');
+  const getwell = spawnSync('node', [cli, 'Ali', '--mode', 'getwell', '--phone', '+923001234567'], { encoding: 'utf8' });
+  assert.strictEqual(getwell.status, 0, getwell.stderr);
+  assert.match(getwell.stdout, /جلد صحت یاب ہو/);
+  const goodluck = spawnSync('node', [cli, 'Sara', '--mode', 'goodluck', '--lang', 'fr'], { encoding: 'utf8' });
+  assert.strictEqual(goodluck.status, 0, goodluck.stderr);
+  assert.match(goodluck.stdout, /Bonne chance, Sara ! 🍀/);
+});
